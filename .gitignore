@@ -1,5 +1,6 @@
-node_modules/
-.DS_Store
-tmp/
-releases/*
-package-lock.json
+*.o
+*.a
+.vs/
+*.elf
+*.sfo
+*.velf
