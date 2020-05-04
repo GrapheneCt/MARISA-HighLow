@@ -1,5 +1,6 @@
 # MARISA HighLow PS Vita
 MARISA HighLow port for PS Vita
+![alt text](https://github.com/GrapheneCt/MARISA-HighLow/raw/master/manual.jpg?raw=true)
 # Credits
 Original game:
 
