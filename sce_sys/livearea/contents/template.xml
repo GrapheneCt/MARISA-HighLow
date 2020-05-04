@@ -1,0 +1,33 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<livearea style="a5" format-ver="01.00" content-rev="1">
+  <livearea-background>
+    <image>bg.png</image>
+  </livearea-background>
+  <gate>
+    <startup-image>startup.png</startup-image>
+  </gate>
+  <frame id="frame4">
+    <liveitem>
+      <text align="center" valign="center">
+        <str size="22" bold="on">さい https://twitter.com/saigyojiyu</str>
+      </text>
+      <target>https://twitter.com/saigyojiyu</target>
+    </liveitem>
+  </frame>
+  <frame id="frame5">
+    <liveitem>
+      <text align="center" valign="center">
+        <str size="22" bold="on">Graphene https://github.com/GrapheneCt</str>
+      </text>
+      <target>https://github.com/GrapheneCt</target>
+    </liveitem>
+  </frame>
+  <frame id="frame6">
+    <liveitem>
+      <text align="center" valign="center">
+        <str size="22" bold="on">原崎 様 http://kihyahya.dojin.com</str>
+      </text>
+      <target>http://kihyahya.dojin.com</target>
+    </liveitem>
+  </frame>
+</livearea>
