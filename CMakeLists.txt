@@ -61,7 +61,7 @@ set_target_properties(${PROJECT_NAME}
 	
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
-  COMMAND dolce-mkbootparam -main-budget 0x80 -app-type 0x08 ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
+  COMMAND dolce-make-bootparam app_memsize 0x8000 attribute 0x08 ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
 )
 
 dolce_create_self(eboot.bin ${PROJECT_NAME} UNSAFE BOOT_PARAM ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin)
