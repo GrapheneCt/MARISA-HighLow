@@ -106,9 +106,9 @@ SceVoid graphicsInit(SceVoid)
 
 SceVoid graphicsPrepairIntro(SceVoid)
 {
-	s_tex_dolce = vita2d_load_BMP_file("/gamedata/image/dolce.bmp", 1);
-	s_tex_warning = vita2d_load_BMP_file("/gamedata/image/caution.bmp", 1);
-	s_tex_rule = vita2d_load_BMP_file("/gamedata/image/rule.bmp", 1);
+	s_tex_dolce = vita2d_load_GXT_file("/gamedata/tex/intro.gxt", 0, 1);
+	s_tex_warning = vita2d_load_additional_GXT(s_tex_dolce, 1);
+	s_tex_rule = vita2d_load_additional_GXT(s_tex_dolce, 2);
 
 	s_pvf_latin_font = vita2d_load_custom_pvf("app0:font/07LogoTypeGothic-CondenseLatin.ttf", 16.0f, 16.0f);
 }
@@ -125,7 +125,6 @@ SceInt8 graphicsDrawIntro(SceInt8 status)
 
 SceVoid graphicsFinishIntro(SceVoid)
 {
-	vita2d_free_texture(s_tex_dolce);
 	s_common_alpha = 0;
 }
 
@@ -140,7 +139,6 @@ SceInt8 graphicsDrawWarning(SceInt8 status)
 
 SceVoid graphicsFinishWarning(SceVoid)
 {
-	vita2d_free_texture(s_tex_warning);
 	s_common_alpha = 0;
 }
 
@@ -164,7 +162,9 @@ SceInt8 graphicsDrawRule(SceInt8 status)
 
 SceVoid graphicsFinishRule(SceVoid)
 {
-	vita2d_free_texture(s_tex_rule);
+	vita2d_free_additional_GXT(s_tex_rule);
+	vita2d_free_additional_GXT(s_tex_warning);
+	vita2d_free_texture(s_tex_dolce);
 	s_common_alpha = 0;
 }
 
@@ -174,44 +174,54 @@ SceInt32 graphicsPrepairMain(SceSize argc, ScePVoid argv)
 
 	/* Load common textures */
 
-	s_tex_spotlight = vita2d_load_BMP_file("/gamedata/image/spotlight.bmp", 1);
+	s_tex_spotlight = vita2d_load_GXT_file("/gamedata/tex/common.gxt", 0, 1);
 	g_loading++;
-	s_tex_deck = vita2d_load_BMP_file("/gamedata/image/deck.bmp", 1);
+	s_tex_deck = vita2d_load_additional_GXT(s_tex_spotlight, 1);
 	g_loading++;
-	s_tex_card_backside = vita2d_load_BMP_file("/gamedata/image/card_backside.bmp", 1);
+	s_tex_card_backside = vita2d_load_additional_GXT(s_tex_spotlight, 2);
 	g_loading++;
-	s_tex_clear = vita2d_load_BMP_file("/gamedata/image/clear.bmp", 1);
+	s_tex_revolver = vita2d_load_additional_GXT(s_tex_spotlight, 3);
 	g_loading++;
-	s_tex_ex_clear = vita2d_load_BMP_file("/gamedata/image/ex_clear.bmp", 1);
+	s_tex_speech_balloon = vita2d_load_additional_GXT(s_tex_spotlight, 4);
 	g_loading++;
-	s_tex_revolver = vita2d_load_BMP_file("/gamedata/image/revolver.bmp", 1);
+	s_tex_message_window = vita2d_load_additional_GXT(s_tex_spotlight, 5);
 	g_loading++;
-	s_tex_speech_balloon = vita2d_load_BMP_file("/gamedata/image/speech_balloon.bmp", 1);
+	s_tex_clear = vita2d_load_additional_GXT(s_tex_spotlight, 6);
 	g_loading++;
-	s_tex_message_window = vita2d_load_BMP_file("/gamedata/image/message_window.bmp", 1);
+	s_tex_ex_clear = vita2d_load_additional_GXT(s_tex_spotlight, 7);
 	g_loading++;
 
 	/* Load Marisa textures */
 
-	SceChar8 path[29];
+	s_tex_body[0] = vita2d_load_GXT_file("/gamedata/tex/marisa/body.gxt", 0, 1);
+	g_loading++;
 
-	for (SceInt8 i = 0; i < 5; i++) {
-		sceClibSnprintf(path, 27, "/gamedata/image/body/%d.bmp", i);
-		DEBUG_PRINT("loading: %s\n", path);
-		s_tex_body[i] = vita2d_load_BMP_file(path, 1);
-		sceClibSnprintf(path, 27, "/gamedata/image/head/%d.bmp", i);
-		DEBUG_PRINT("loading: %s\n", path);
-		s_tex_head[i] = vita2d_load_BMP_file(path, 1);
+	for (SceInt8 i = 1; i < 5; i++) {
+		s_tex_body[i] = vita2d_load_additional_GXT(s_tex_body[0], i);
 		g_loading++;
 	}
 
-	for (SceInt8 i = 0; i < 16; i++) {
-		sceClibSnprintf(path, 29, "/gamedata/image/eye/%d.bmp", i);
-		DEBUG_PRINT("loading: %s\n", path);
-		s_tex_eye[i] = vita2d_load_BMP_file(path, 1);
-		sceClibSnprintf(path, 29, "/gamedata/image/mouth/%d.bmp", i);
-		DEBUG_PRINT("loading: %s\n", path);
-		s_tex_mouth[i] = vita2d_load_BMP_file(path, 1);
+	s_tex_head[0] = vita2d_load_GXT_file("/gamedata/tex/marisa/head.gxt", 0, 1);
+	g_loading++;
+
+	for (SceInt8 i = 1; i < 5; i++) {
+		s_tex_head[i] = vita2d_load_additional_GXT(s_tex_head[0], i);
+		g_loading++;
+	}
+
+	s_tex_eye[0] = vita2d_load_GXT_file("/gamedata/tex/marisa/eye.gxt", 0, 1);
+	g_loading++;
+
+	for (SceInt8 i = 1; i < 16; i++) {
+		s_tex_eye[i] = vita2d_load_additional_GXT(s_tex_eye[0], i);
+		g_loading++;
+	}
+
+	s_tex_mouth[0] = vita2d_load_GXT_file("/gamedata/tex/marisa/mouth.gxt", 0, 1);
+	g_loading++;
+
+	for (SceInt8 i = 1; i < 16; i++) {
+		s_tex_mouth[i] = vita2d_load_additional_GXT(s_tex_mouth[0], i);
 		g_loading++;
 	}
 
