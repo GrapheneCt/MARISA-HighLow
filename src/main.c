@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <string.h>
 #include <psp2/kernel/threadmgr.h> 
 #include <psp2/kernel/modulemgr.h> 
 #include <psp2/kernel/sysmem.h> 
@@ -433,10 +434,11 @@ void _start(unsigned int args, void *argp)
 {
 	SceInt32 ret;
 
-	/* load libc module (required for SceSystemGesture) */
-
-	ret = sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
-	DEBUG_PRINT("Libc module: 0x%08x\n", ret);
+	/* Invoke SceLibc, load vitas2d_sys and vitaSAS modules */
+	
+	memset(&ret, 0, 4);
+	sceKernelLoadStartModule("app0:module/vitaSAS.suprx", 0, NULL, 0, NULL, NULL);
+	sceKernelLoadStartModule("app0:module/vita2d_sys.suprx", 0, NULL, 0, NULL, NULL);
 
 	/* create clib mspace */
 
