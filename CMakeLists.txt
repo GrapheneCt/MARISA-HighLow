@@ -9,10 +9,15 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 
 project(MARISA-HIGHLOW)
+
 include("${DOLCESDK}/share/dolce.cmake" REQUIRED)
+
+dolce_gen_libs(SceLibKernel_stubs
+  SceLibKernel.yml
+  LIB SceLibKernel_stub_weak)
 set(VITA_APP_NAME "MARISA HighLow")
-set(VITA_TITLEID  "MARISAHIL")
-set(VITA_VERSION  "02.00")
+set(VITA_TITLEID  "GRVA00003")
+set(VITA_VERSION  "02.10")
 set(DOLCE_MKSFOEX_FLAGS "${DOLCE_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=9")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE} -fno-builtin")
 
@@ -53,7 +58,7 @@ target_link_libraries(${PROJECT_NAME}
 	SceAppUtil_stub
 	SceDbg_stub
 	SceLibc_stub
-	gcc
+	SceLibKernel_stub_weak
     )
 	
 set_target_properties(${PROJECT_NAME}
@@ -70,6 +75,7 @@ dolce_create_self(eboot.bin ${PROJECT_NAME} UNSAFE BOOT_PARAM ${CMAKE_CURRENT_BI
 dolce_create_vpk(${PROJECT_NAME}.vpk ${VITA_TITLEID} eboot.bin
     VERSION ${VITA_VERSION}
     NAME ${VITA_APP_NAME}
+	CONTENT_ID_NAME MARISAHIGHLOWPSV
 	FILE sce_sys/icon0.png sce_sys/icon0.png
 	   sce_sys/pic0.png sce_sys/pic0.png
        sce_sys/livearea/contents/bg.png sce_sys/livearea/contents/bg.png
