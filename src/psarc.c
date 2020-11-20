@@ -1,7 +1,7 @@
-#include <psp2/io/stat.h> 
 #include <psp2/kernel/clib.h>
-#include <psp2/io/fcntl.h> 
+#include <psp2/kernel/iofilemgr.h> 
 #include <psp2/sysmodule.h>
+#include <stdlib.h>
 
 #include "psarc.h"
 
@@ -33,8 +33,6 @@ static SceFiosFH s_archive_fh = -1;
 
 SceFiosRamCacheContext s_ramcache_context = SCE_FIOS_RAM_CACHE_CONTEXT_INITIALIZER;
 static SceByte s_ramcache_work_buffer[10 * (64 * 1024)] __attribute__((aligned(8)));
-
-extern ScePVoid g_mspace;
 
 /* memcpy replacement for initializers */
 
@@ -77,14 +75,14 @@ SceVoid psarcOpenArchive(const SceName path, const SceName mountpoint)
 
 	SceFiosSize result = sceFiosArchiveGetMountBufferSizeSync(NULL, path, NULL);
 	s_mount_buffer.length = (SceSize)result;
-	s_mount_buffer.pPtr = sceClibMspaceMalloc(g_mspace, s_mount_buffer.length);
+	s_mount_buffer.pPtr = malloc(s_mount_buffer.length);
 	sceFiosArchiveMountSync(NULL, &s_archive_fh, path, mountpoint, s_mount_buffer, NULL);
 }
 
 SceVoid psarcFinish(SceVoid)
 {
 	sceFiosArchiveUnmountSync(NULL, s_archive_fh);
-	sceClibMspaceFree(g_mspace, s_mount_buffer.pPtr);
+	free(s_mount_buffer.pPtr);
 	sceFiosIOFilterRemove(s_archive_index);
 	sceFiosIOFilterRemove(s_archive_index + 1);
 	sceFiosTerminate();

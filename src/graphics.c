@@ -1,6 +1,6 @@
 ﻿#include <stdbool.h>
 #include <vita2d_sys.h>
-#include <psp2/io/fcntl.h>
+#include <psp2/kernel/iofilemgr.h>
 #include <psp2/kernel/clib.h> 
 #include <psp2/kernel/threadmgr.h> 
 
@@ -23,7 +23,6 @@ same, nothing will happen.\n\nWin condition: obtain 100 million yen before\nyou 
 extern SceBool g_skip_flag;
 extern SceBool g_skip_flag_lock;
 extern SceUInt8 g_loading;
-extern ScePVoid g_mspace;
 
 /* Common textures */
 
@@ -68,7 +67,6 @@ SceVoid graphicsDrawStart(SceVoid)
 SceVoid graphicsDrawFinish(SceVoid)
 {
 	vita2d_end_drawing();
-	vita2d_wait_rendering_done();
 	vita2d_end_shfb();
 }
 
@@ -96,7 +94,6 @@ SceInt8 graphicsFader(SceInt8 status)
 
 SceVoid graphicsInit(SceVoid)
 {
-	vita2d_clib_pass_mspace(g_mspace);
 	vita2d_init();
 	vita2d_set_vblank_wait(0);
 	vita2d_set_clear_color(RGBA8(39, 39, 39, 255));
@@ -162,6 +159,7 @@ SceInt8 graphicsDrawRule(SceInt8 status)
 
 SceVoid graphicsFinishRule(SceVoid)
 {
+	vita2d_wait_rendering_done();
 	vita2d_free_additional_GXT(s_tex_rule);
 	vita2d_free_additional_GXT(s_tex_warning);
 	vita2d_free_texture(s_tex_dolce);

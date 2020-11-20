@@ -14,13 +14,6 @@
 #include "psarc.h"
 #include "misc.h"
 
-/*CPU Affinity mask:
-0x00000 - all user cores (auto)
-0x80000 - system-reserved core
-0xF0000 - ???
-*/
-
-#define CLIB_HEAP_SIZE 7 * 1024 * 1024
 #define MONEY_CLEAR 100000000
 #define MONEY_EX_CLEAR 2000000000
 #define NORMAL_HEARTBEAT 32
@@ -31,7 +24,6 @@
 SceBool g_skip_flag = false;
 SceBool g_skip_flag_lock = false;
 
-ScePVoid g_mspace;
 SceUInt32 g_heartbeat_delay = NORMAL_HEARTBEAT;
 SceUInt8 g_loading = 0;
 SceUInt8 g_choice = 0;
@@ -434,18 +426,10 @@ void _start(unsigned int args, void *argp)
 {
 	SceInt32 ret;
 
-	/* Invoke SceLibc, load vitas2d_sys and vitaSAS modules */
+	/* load vitas2d_sys and vitaSAS modules */
 	
-	memset(&ret, 0, 4);
 	sceKernelLoadStartModule("app0:module/vitaSAS.suprx", 0, NULL, 0, NULL, NULL);
 	sceKernelLoadStartModule("app0:module/vita2d_sys.suprx", 0, NULL, 0, NULL, NULL);
-
-	/* create clib mspace */
-
-	ScePVoid clibm_base;
-	SceUID clib_heap = sceKernelAllocMemBlock("MHL_ClibHeap", SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE, CLIB_HEAP_SIZE, NULL);
-	sceKernelGetMemBlockBase(clib_heap, &clibm_base);
-	g_mspace = sceClibMspaceCreate(clibm_base, CLIB_HEAP_SIZE);
 
 	/* init apputil */
 

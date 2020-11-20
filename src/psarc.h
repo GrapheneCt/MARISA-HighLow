@@ -1,5 +1,5 @@
 #pragma once
-#include <psp2/io/stat.h> 
+#include <psp2/kernel/iofilemgr.h> 
 
 #define MAX_PATH_LENGTH 1024
 #define MAX_NAME_LENGTH 256

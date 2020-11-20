@@ -11,14 +11,10 @@ endif()
 project(MARISA-HIGHLOW)
 
 include("${DOLCESDK}/share/dolce.cmake" REQUIRED)
-
-dolce_gen_libs(SceLibKernel_stubs
-  SceLibKernel.yml
-  LIB SceLibKernel_stub_weak)
 set(VITA_APP_NAME "MARISA HighLow")
 set(VITA_TITLEID  "GRVA00003")
-set(VITA_VERSION  "02.10")
-set(DOLCE_MKSFOEX_FLAGS "${DOLCE_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=9")
+set(VITA_VERSION  "02.11")
+set(DOLCE_MKSFOEX_FLAGS "${DOLCE_MKSFOEX_FLAGS} -s CATEGORY=gdc -d PARENTAL_LEVEL=9")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE} -fno-builtin")
 
 link_directories(
@@ -58,7 +54,8 @@ target_link_libraries(${PROJECT_NAME}
 	SceAppUtil_stub
 	SceDbg_stub
 	SceLibc_stub
-	SceLibKernel_stub_weak
+	SceRtabi_stub
+	SceLibRng_stub
     )
 	
 set_target_properties(${PROJECT_NAME}
@@ -67,7 +64,7 @@ set_target_properties(${PROJECT_NAME}
 	
 add_custom_command(
   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
-  COMMAND dolce-mkbootparam -main-budget 0x80 -app-type 0x08 ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
+  COMMAND dolce-make-bootparam app_memsize 0x8000 attribute 0x02 ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
 )
 
 dolce_create_self(eboot.bin ${PROJECT_NAME} UNSAFE BOOT_PARAM ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin)

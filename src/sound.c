@@ -1,7 +1,7 @@
 #include <stdbool.h>
 #include <vitaSAS.h>
 #include <psp2/kernel/clib.h> 
-#include <psp2/io/fcntl.h> 
+#include <psp2/kernel/iofilemgr.h> 
 #include <psp2/types.h> 
 #include <psp2/audioout.h>  
 #include <psp2/kernel/threadmgr.h> 
@@ -12,12 +12,10 @@
 extern SceUInt8 g_heartbeat_delay;
 extern SceUInt8 g_loading;
 extern SceUInt8 g_audio_sample;
-extern ScePVoid g_mspace;
 extern SceUInt8 g_global_state;
 
 SceVoid soundInitialize(SceVoid)
 {
-	vitaSAS_pass_mspace(g_mspace);
 	vitaSAS_init(0);
 
 	VitaSASSystemParam initParam;
