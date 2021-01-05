@@ -13,7 +13,7 @@ project(MARISA-HIGHLOW)
 include("${DOLCESDK}/share/dolce.cmake" REQUIRED)
 set(VITA_APP_NAME "MARISA HighLow")
 set(VITA_TITLEID  "GRVA00003")
-set(VITA_VERSION  "02.11")
+set(VITA_VERSION  "02.12")
 set(DOLCE_MKSFOEX_FLAGS "${DOLCE_MKSFOEX_FLAGS} -s CATEGORY=gdc -d PARENTAL_LEVEL=9")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE} -fno-builtin")
 
@@ -36,19 +36,13 @@ target_link_libraries(${PROJECT_NAME}
 	SceGxm_stub
 	SceLibKernel_stub
 	SceSysmem_stub
-	SceKernelThreadMgr_stub
+	SceThreadMgr_stub
 	SceProcessMgr_stub
-	SceAppMgr_stub 
-	ScePvf_stub 
-	SceDisplay_stub 
-	SceSysmodule_stub 
+	SceAppMgr_stub
+	SceSysmodule_stub
 	SceCtrl_stub
-	SceTouch_stub 
-	SceAudio_stub 
+	SceTouch_stub
 	SceIofilemgr_stub
-	SceCodecEngine_stub 
-	SceAudiodec_stub 
-	SceSas_stub
 	SceFios2_stub
 	SceSystemGesture_stub
 	SceAppUtil_stub

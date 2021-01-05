@@ -6,7 +6,8 @@
 #include <psp2/kernel/rng.h> 
 #include <psp2/kernel/clib.h> 
 #include <psp2/sas.h> 
-#include <psp2/apputil.h> 
+#include <psp2/apputil.h>
+#include <psp2/libdbg.h> 
 
 #include "ctrl.h"
 #include "graphics.h"
@@ -28,7 +29,7 @@ SceUInt32 g_heartbeat_delay = NORMAL_HEARTBEAT;
 SceUInt8 g_loading = 0;
 SceUInt8 g_choice = 0;
 SceUInt8 g_audio_sample = 11;
-SceUInt8 g_global_state = 0;
+SceUInt8 g_global_state = GS_INTRO_BUSY;
 
 /*g_global_state:
 0 - intro/busy,
@@ -131,16 +132,27 @@ SceInt32 main(SceVoid)
 
 	SceByte marisa[5];
 	SceByte card[4][9];
-	sceClibMemset(&marisa, 0, 5);
-	sceClibMemset(&card, 1, 36);
-
-	sceAppUtilLoadSafeMemory(&count, sizeof(SceUInt8), 0);
-
 	SceUInt32 money;
 	SceUInt8 chance_modifier, expression_modifier, remaining_cards;
 	SceUInt8 card_curr[2];
 	SceUInt8 card_new[2];
 	SceUInt8 card_old[2];
+
+	/* main vars */
+
+	SceBool dead = false;
+	SceBool lost = false;
+	SceUInt8 anim_state, anim_action, anim_result, heartbeat_delta, flash_state;
+	SceUInt32 anim_cycle;
+
+restart: //here if user restarted after death
+
+	g_skip_flag = false;
+
+	sceClibMemset(&marisa, 0, 5);
+	sceClibMemset(&card, 1, 36);
+
+	sceAppUtilLoadSafeMemory(&count, sizeof(SceUInt8), 0);
 
 	if (!count) {
 		DEBUG_PRINT("SafeMem: New\n");
@@ -164,17 +176,10 @@ SceInt32 main(SceVoid)
 		DEBUG_PRINT("SafeMem: Money: %d\n", money);
 	}
 
-	g_global_state = 1;
+	g_global_state = GS_ALL_GREEN;
 	SceUID id_sound = sceKernelCreateThread("MHL_soundThread", soundMain, 64, 4096, 0, 0x80000, NULL);
 	ret = sceKernelStartThread(id_sound, 0, NULL);
 	DEBUG_PRINT("MHL_soundThread start: 0x%08x\n", ret);
-
-	/* main vars */
-
-	SceBool dead = false;
-	SceBool lost = false;
-	SceUInt8 anim_state, anim_action, anim_result, heartbeat_delta, flash_state;
-	SceUInt32 anim_cycle;
 
 	/* init main vars */
 
@@ -193,14 +198,14 @@ SceInt32 main(SceVoid)
 
 		/* main events switch */
 
-		if (g_global_state == 1)
+		if (g_global_state == GS_ALL_GREEN)
 			switch (g_choice) {
 			case 1: //pass
 				remaining_cards--;
 				g_audio_sample = 6;
 				g_choice = 0;
 				count = 0;
-				g_global_state = 0;
+				g_global_state = GS_INTRO_BUSY;
 				anim_state = 0;
 				anim_action = 0;
 				break;
@@ -208,7 +213,7 @@ SceInt32 main(SceVoid)
 				remaining_cards--;
 				g_choice = 0;
 				count = 0;
-				g_global_state = 0;
+				g_global_state = GS_INTRO_BUSY;
 				anim_state = 0;
 				anim_action = 1;
 				if (card_new[1] > card_old[1]) {
@@ -230,7 +235,7 @@ SceInt32 main(SceVoid)
 				remaining_cards--;
 				g_choice = 0;
 				count = 0;
-				g_global_state = 0;
+				g_global_state = GS_INTRO_BUSY;
 				anim_state = 0;
 				anim_action = 2;
 				if (card_new[1] < card_old[1]) {
@@ -252,7 +257,7 @@ SceInt32 main(SceVoid)
 				remaining_cards--;
 				g_choice = 0;
 				count = 0;
-				g_global_state = 0;
+				g_global_state = GS_INTRO_BUSY;
 				anim_state = 0;
 				anim_action = 3;
 				if (card_new[1] == card_old[1]) {
@@ -271,14 +276,14 @@ SceInt32 main(SceVoid)
 		/* subevents switch */
 
 		switch (g_global_state) {
-		case 2: //animation finish events
+		case GS_SWAPPING_CARDS: //animation finish events
 			card_old[0] = card_curr[0];
 			card_old[1] = card_curr[1];
 			if (remaining_cards == 0) {
-				g_global_state = 5;
+				g_global_state = GS_CHECKING_WIN;
 			}
 			else if (lost) {
-				g_global_state = 3;
+				g_global_state = GS_LOSE;
 				marisa[4] = 1;
 				g_heartbeat_delay = FAST_HEARTBEAT;
 				g_audio_sample = 9;
@@ -289,10 +294,10 @@ SceInt32 main(SceVoid)
 				marisa[3] = miscGetRandomNumber(expression_modifier, expression_modifier + 4, marisa[3]);
 				DEBUG_PRINT("New mouth: %d, New eyes: %d\n", marisa[3], marisa[2]);
 				miscSave(marisa, card, card_old, card_new, &expression_modifier, &chance_modifier, &remaining_cards, &money);
-				g_global_state = 1;
+				g_global_state = GS_ALL_GREEN;
 			}
 			break;
-		case 3: //lose events
+		case GS_LOSE: //lose events
 			if (anim_cycle < 150)
 				anim_cycle++;
 			else {
@@ -320,23 +325,27 @@ SceInt32 main(SceVoid)
 					DEBUG_PRINT("New mouth: %d, New eyes: %d\n", marisa[3], marisa[2]);
 					miscSave(marisa, card, card_old, card_new, &expression_modifier, &chance_modifier, &remaining_cards, &money);
 					DEBUG_PRINT("Expression modifier: %d, Chance modifier: %d\n", expression_modifier, chance_modifier);
-					g_global_state = 1;
+					g_global_state = GS_ALL_GREEN;
 				}
 			}
 			break;
-		case 5: //win condition check
+		case GS_DEAD: //restart check
+			if (g_skip_flag)
+				goto restart;
+			break;
+		case GS_CHECKING_WIN: //win condition check
 			if (money < MONEY_CLEAR) {
-				g_global_state = 3;
+				g_global_state = GS_LOSE;
 				marisa[4] = 1;
 				g_audio_sample = 9;
 				miscInitSafeMemory();
 				dead = true;
 			}
 			else if (money >= MONEY_CLEAR && money < MONEY_EX_CLEAR) {
-				g_global_state = 7;
+				g_global_state = GS_RESULT_WIN;
 			}
 			else {
-				g_global_state = 8;
+				g_global_state = GS_RESULT_EX_WIN;
 			}
 			break;
 		}
@@ -378,7 +387,7 @@ SceInt32 main(SceVoid)
 		graphicsDrawMarisa(marisa);
 		graphicsDrawDeck(card);
 		if (graphicsDrawCardAnimation(card_curr[0], card_curr[1] + 1, anim_state, anim_action, anim_result)) {
-			g_global_state = 2;
+			g_global_state = GS_SWAPPING_CARDS;
 			anim_state = 2;
 			anim_action = 4;
 			anim_result = 3;
@@ -391,25 +400,25 @@ SceInt32 main(SceVoid)
 		case 2:
 			if (graphicsDrawFlashDown()) {
 				flash_state = 0;
-				g_global_state = 4;
+				g_global_state = GS_DEAD;
 			}
 			break;
 		}
 		switch (g_global_state) {
-		case 3:
+		case GS_LOSE:
 			if (dead)
 				graphicsDrawPreDeadMessage();
 			break;
-		case 4:
+		case GS_DEAD:
 			graphicsDrawDeadMessage();
 			break;
-		case 7:
+		case GS_RESULT_WIN:
 			if (graphicsDrawClear(money)) {
 				miscInitSafeMemory();
 				g_audio_sample = 0;
 			}
 			break;
-		case 8:
+		case GS_RESULT_EX_WIN:
 			if (graphicsDrawExClear(money)) {
 				miscInitSafeMemory();
 				g_audio_sample = 2;
@@ -425,6 +434,8 @@ SceInt32 main(SceVoid)
 void _start(unsigned int args, void *argp)
 {
 	SceInt32 ret;
+
+	sceDbgSetMinimumLogLevel(SCE_DBG_LOG_LEVEL_ERROR);
 
 	/* load vitas2d_sys and vitaSAS modules */
 	

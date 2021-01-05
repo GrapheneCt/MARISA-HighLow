@@ -43,7 +43,6 @@ SceVoid ctrlInit(SceVoid)
 	sceTouchSetSamplingState(SCE_TOUCH_PORT_BACK, SCE_TOUCH_SAMPLING_STATE_START);
 
 	/* systemgesture init */
-
 	ret = sceSysmoduleLoadModule(SCE_SYSMODULE_SYSTEM_GESTURE);
 	DEBUG_PRINT("SceSystemGesture module: 0x%08x\n", ret);
 	sceSystemGestureInitializePrimitiveTouchRecognizer(NULL);
@@ -71,7 +70,7 @@ SceVoid ctrlMain(SceVoid)
 		sceSystemGestureUpdateTouchRecognizer(&s_swipe_recognizer_back);
 
 		switch (g_global_state) {
-		case 1:
+		case GS_ALL_GREEN:
 			/* touch */
 
 			sceSystemGestureGetTouchEvents(&s_swipe_recognizer_front, &swipe_event, 1, &event_num_buffer);
@@ -112,8 +111,9 @@ SceVoid ctrlMain(SceVoid)
 			else if (ONPRESS(SCE_CTRL_DOWN))
 				g_choice = 3;
 			break;
-		case 7:
-		case 8:
+
+		case GS_RESULT_WIN:
+		case GS_RESULT_EX_WIN:
 			/* touch */
 
 			sceSystemGestureUpdateTouchRecognizer(&s_tap_recognizer);
@@ -130,6 +130,22 @@ SceVoid ctrlMain(SceVoid)
 			if (ONPRESS(SCE_CTRL_CROSS) || ONPRESS(SCE_CTRL_CIRCLE) && g_skip_flag)
 				g_skip_flag = false;
 			else if (ONPRESS(SCE_CTRL_CROSS) || ONPRESS(SCE_CTRL_CIRCLE))
+				g_skip_flag = true;
+			break;
+
+		case GS_DEAD:
+			/* touch */
+
+			sceSystemGestureUpdateTouchRecognizer(&s_tap_recognizer);
+			sceSystemGestureGetTouchEvents(&s_tap_recognizer, &tap_event, 1, &event_num_buffer);
+
+			if (event_num_buffer > 0)
+				g_skip_flag = true;
+
+			/* buttons */
+
+			sceCtrlPeekBufferPositive(0, &ctrl, 1);
+			if (ONPRESS(SCE_CTRL_CROSS) || ONPRESS(SCE_CTRL_CIRCLE))
 				g_skip_flag = true;
 			break;
 		}
@@ -172,7 +188,7 @@ SceInt32 ctrlThread(SceSize argc, ScePVoid argv)
 
 		sceKernelDelayThread(10000);
 
-		if (g_global_state == 1)
+		if (g_global_state == GS_ALL_GREEN)
 			break;
 	}
 

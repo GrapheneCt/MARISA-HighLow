@@ -1,5 +1,18 @@
 ﻿#pragma once
 
+typedef enum GlobalGameState {
+	GS_INTRO_BUSY,
+	GS_ALL_GREEN,
+	GS_SWAPPING_CARDS,
+	GS_LOSE,
+	GS_DEAD,
+	GS_CHECKING_WIN,
+	GS_RESULT_LOSE,
+	GS_RESULT_WIN,
+	GS_RESULT_EX_WIN,
+	GS_TRANSITION
+} GlobalGameState;
+
 //#define DEBUG_ON
 
 #ifdef DEBUG_ON

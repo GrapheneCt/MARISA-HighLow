@@ -4,7 +4,8 @@
 #include <psp2/kernel/iofilemgr.h> 
 #include <psp2/types.h> 
 #include <psp2/audioout.h>  
-#include <psp2/kernel/threadmgr.h> 
+#include <psp2/kernel/threadmgr.h>
+#include <psp2/sas.h>
 
 #include "sound.h"
 #include "misc.h"
@@ -21,10 +22,10 @@ SceVoid soundInitialize(SceVoid)
 	VitaSASSystemParam initParam;
 	initParam.outputPort = SCE_AUDIO_OUT_PORT_TYPE_MAIN;
 	initParam.samplingRate = 48000;
-	initParam.numGrain = 256;
-	initParam.thPriority = 64;
+	initParam.numGrain = SCE_SAS_GRAIN_SAMPLES;
+	initParam.thPriority = SCE_KERNEL_INDIVIDUAL_QUEUE_HIGHEST_PRIORITY;
 	initParam.thStackSize = 128 * 1024;
-	initParam.thCpu = 0;
+	initParam.thCpu = SCE_KERNEL_THREAD_CPU_AFFINITY_MASK_DEFAULT;
 	initParam.isSubSystem = SCE_FALSE;
 	initParam.subSystemNum = VITASAS_NO_SUBSYSTEM;
 
@@ -35,9 +36,9 @@ SceVoid soundInitialize(SceVoid)
 	vitaSASVoiceParam voiceParam;
 	voiceParam.loop = 0;
 	voiceParam.loopSize = 0;
-	voiceParam.pitch = 4096;
-	voiceParam.volLDry = 4096;
-	voiceParam.volRDry = 4096;
+	voiceParam.pitch = SCE_SAS_PITCH_BASE;
+	voiceParam.volLDry = SCE_SAS_VOLUME_MAX;
+	voiceParam.volRDry = SCE_SAS_VOLUME_MAX;
 	voiceParam.volLWet = 0;
 	voiceParam.volRWet = 0;
 	voiceParam.adsr1 = 0;
@@ -58,7 +59,7 @@ SceInt32 soundMain(SceSize argc, ScePVoid argv)
 
 	while (1) {
 
-		if (heartbeat_counter == 0 && g_global_state != 4 && g_global_state != 7 && g_global_state != 8)
+		if (heartbeat_counter == 0 && g_global_state != GS_DEAD && g_global_state != GS_RESULT_WIN && g_global_state != GS_RESULT_EX_WIN)
 			vitaSAS_set_key_on(3);
 
 		if (subvoice_id == -1 && g_audio_sample < 11) {
@@ -73,7 +74,7 @@ SceInt32 soundMain(SceSize argc, ScePVoid argv)
 				subvoice_id = -1;
 			}
 
-		if (heartbeat_counter < g_heartbeat_delay && g_global_state != 4 && g_global_state != 7 && g_global_state != 8)
+		if (heartbeat_counter < g_heartbeat_delay && g_global_state != GS_DEAD && g_global_state != GS_RESULT_WIN && g_global_state != GS_RESULT_EX_WIN)
 			heartbeat_counter++;
 		else {
 			heartbeat_counter = 0;
